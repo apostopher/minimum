@@ -37,11 +37,12 @@ class minGame
 
     ####################### PRIVATE STATIC VARIABLES ##########################
     cardsPerDeck = 52
+    jokersPerDeck = 3
     cardsPerSuite = 13
     # Total number of decks used (without jokers) 1 deck = 52 cards
     noOfDecks = 1
     # Total number of jokers to be included.
-    noOfJokers = 3
+    noOfJokers = noOfDecks * jokersPerDeck
 
     # Total sane cards
     totalSaneCards = cardsPerDeck * noOfDecks
@@ -55,6 +56,19 @@ class minGame
     minRounds = 3
 
     ####################### PRIVATE INTERFACE #################################
+
+    # Get appropriate number number of cards
+    getCards = (noOfPlayers, cardsPerPlayer = 5) ->
+        totalCardsinHand = noOfPlayers * cardsPerPlayer
+        if totalCardsinHand >= cardsPerDeck / 2
+            # restOfCards is too less
+            # Increase number of decks
+            approxTotalCards = totalCardsinHand * 2
+            totalRequiredDecks = Math.round (approxTotalCards / (cardsPerDeck + jokersPerDeck))
+            totalRequiredCards = totalRequiredDecks * (cardsPerDeck + jokersPerDeck)
+            return [1...totalRequiredCards]
+        else
+            return packOfCards
 
     # Returns a random card from deck of cards
     # Using Math.round() will give you a non-uniform distribution!
@@ -93,7 +107,7 @@ class minGame
             sortDeal playerDeal
 
         return 'restOfCards' : totalCards, 'deal' : deal, 'faceCards' : [faceCard], 
-        'moves' : 0, 'minMoves' : (minRounds * noOfPlayers)
+        'moves' : 0, 'minMoves' : (minRounds * players.length)
     
     # Check whether cards are of same type
     # Cards are same only if their modulus 13 is same.
@@ -166,10 +180,12 @@ class minGame
             Name    : 'Minimum card game'
             authors : ['Rahul Devaskar']
             website : ''
-        try
-            @gameState = dealCards players, cardsPerPlayer, packOfCards
-        catch error
+        if not _und.isArray players
             @gameState = undefined
+        try
+            @gameState = dealCards players, cardsPerPlayer, getCards players.length, cardsPerPlayer
+        catch error
+            @gameState = error
 
     # Make move function
     # player will have choice to select face card OR select card from Deck.

@@ -64,22 +64,25 @@ class minServer
 	###################### PUBLIC INTERFACE ##################
 
 	constructor: (@port) ->
-		@expressServer = do express
-		expressServer = @expressServer
+		app = do express
+		
+		app.set 'title', 'Minimum Game'
 
-		expressServer.set 'title', 'Minimum Game'
+		# Start server
+		expressServer = app.listen @port
+		console.log "Server listening on port #{ @port }"
 
 		# Attach webSocket server.
 		@webSocketServer = socketio.listen expressServer
 		webSocketServer = @webSocketServer
 
 		# Attach webSocket actions
-		io.sockets.on 'connection', (socket) ->
+		webSocketServer.sockets.on 'connection', (socket) ->
 			socket.emit 'welcome', 'name': 'Minimum Game', 'commands': commands
 
 			# New game event
 			socket.on commands.newGame, startNewGame
 
-  
-		# Start server
-		expressServer.listen @port
+
+# Publish module
+module.exports = minServer

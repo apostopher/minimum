@@ -187,6 +187,43 @@ class minGame
         catch error
             @gameState = error
 
+    # Get player's state
+    # This is a subset of complete game state
+    # Player's state consists of this hand cards, and face card only
+    getPlayerState: (player, allStates = false) ->
+        gameState = @gameState
+        # This state will be sent to player
+        playerState =
+            faceCards : gameState.faceCards # player will get faceCards
+            moves     : gameState.moves     # number of moves till this time
+
+        if allStates
+            # This state will be sent to all other clients
+            newState =
+                faceCards : gameState.faceCards # player will get faceCards
+                moves     : gameState.moves     # number of moves till this time
+
+        # Sanitize name
+        player = do player.trim
+        # Add deal information
+        for gamePlayer, gamePlayerDeal of gameState.deal
+            # player will get his deal cards
+            # player will ge count of other player's cards
+            if gamePlayer is player
+                playerState[gamePlayer] = gamePlayerDeal
+            else
+                playerState[gamePlayer] = gamePlayerDeal.length
+
+            if allStates
+                # add length to newState
+                newState[gamePlayer] = gamePlayerDeal.length
+
+        if allStates
+            # Return player's state
+            return 'playerState' : playerState, 'newState' : newState
+        else
+            return playerState
+
     # Make move function
     # player will have choice to select face card OR select card from Deck.
     makeMove: (player, selectedCards, isFace) ->
@@ -233,8 +270,8 @@ class minGame
         # STEP 6 : Update total number of moves made till now
         gameState.moves += 1
 
-        # All done. Return to caller
-        return gameState
+        # All done. Return player's state to caller
+        return @getPlayerState player, true
 
     # Player thinks he/she has minimum score
     declareMinimum: (player) ->

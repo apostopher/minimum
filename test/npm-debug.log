@@ -1,0 +1,25 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'test' ]
+2 info using npm@1.1.43
+3 info using node@v0.8.3
+4 verbose node symlink C:\Program Files\nodejs\\node.exe
+5 verbose config file C:\Users\apostopher\.npmrc
+6 verbose config file C:\Program Files\nodejs\etc\npmrc
+7 verbose config file C:\Program Files\nodejs\node_modules\npm\npmrc
+8 verbose read json D:\school\minimum\test\package.json
+9 error Error: ENOENT, open 'D:\school\minimum\test\package.json'
+10 error If you need help, you may report this log at:
+10 error     <http://github.com/isaacs/npm/issues>
+10 error or email it to:
+10 error     <npm-@googlegroups.com>
+11 error System Windows_NT 6.1.7601
+12 error command "C:\\Program Files\\nodejs\\\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "test"
+13 error cwd D:\school\minimum\test
+14 error node -v v0.8.3
+15 error npm -v 1.1.43
+16 error path D:\school\minimum\test\package.json
+17 error code ENOENT
+18 error errno 34
+19 verbose exit [ 34, true ]

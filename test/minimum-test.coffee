@@ -18,27 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-vows     = require 'vows'
-assert   = require 'assert'
-minGame  = require '../bin/minimum'
-_und     = require 'underscore'
+minGame = require '../minimum'
+should  = require 'should'
+_und    = require 'underscore'
 
-vows.describe('minimum')
-    .addBatch
-        'A Game':
-            topic: new minGame ['Rahul', 'Vikash', 'Ankur'], 5
-            'has three players': (game) ->
-                assert.lengthOf _und.keys(game.gameState.deal), 3
-                return
-            ,
-            'and one open card': (game) ->
-                assert.lengthOf game.gameState.faceCards, 1
-                return
-    .addBatch
-        'A Game with default cards':
-            topic: ->
-                new minGame ['Rahul', 'Vikash', 'Ankur']
-            'has 5 cards per players': (game) ->
-                assert.lengthOf game.gameState.deal.Rahul, 5
-                return
-    .export module
+describe 'Minimum Game', ->
+  describe 'when creating a new game with 6 players', ->
+    myGame = null
+    before ->
+        myGame = new minGame ["Rahul", "Brajesh", "Vikash", "Ram", "Ankur", "Nikit"]
+
+    it 'should create initial game state', ->
+        should.exist myGame.gameState

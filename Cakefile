@@ -28,9 +28,9 @@ appFiles =
         ]
     'development' :
         [
-            { name: 'minimum', options: "--bare", outdir: "bin"}
-            { name: 'min-server', options: "--bare", outdir: "bin"}
-            { name: 'server', options: "--bare", outdir: "bin" }
+            { name: 'minimum', options: "--bare", outdir: "./"}
+            { name: 'min-server', options: "--bare", outdir: "./"}
+            { name: 'server', options: "--bare", outdir: "./" }
         ]    
 
 task 'compile', 'Compile individual files debug-friendly', ->

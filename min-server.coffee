@@ -25,11 +25,13 @@
 # It is a websocket server that listens to client requests.
 
 ###################### DEPENDENCIES ##########################
-minGame  = require './minimum'
 express  = require 'express'
 socketio = require 'socket.io'
 crypto   = require 'crypto'
 stylus   = require 'stylus'
+mongo    = require 'mongodb'
+minGame  = require './minimum'
+minDb    = require './minimum.mongodb'
 ##############################################################
 
 class minServer
@@ -39,6 +41,7 @@ class minServer
 		newGame        : 'newGame'
 		makePlayerMove : 'makePlayerMove'
 		hostNewGame    : 'hostNewGame'
+		declareGame    : 'declareGame'
 
 	errors =
 		newGame           : 'Error occured while starting game'
@@ -46,6 +49,11 @@ class minServer
 		noSuchPlayer      : 'No such player exists'
 		invalidMove       : 'Invalid move'
 		MinMovesRuleError : 'Not allowed to declare before minimum moves'
+		saveFailedError   : 'Saving player\'s move failed!'
+		noSuchGameError   : 'No such game exists'
+		declareError      : 'Error occured in declaring game'
+
+	dbObject = null
 
 	createId =  (seed) ->
         shasum = crypto.createHash 'sha1'
@@ -69,66 +77,87 @@ class minServer
 	startNewGame = (socket, gameId, data) ->
 		players = data.p
 		if not players
-			socket.emit 'error', error: errors.newGame
+			socket.emit ('error@' + gameId), error: errors.newGame
 			return false
 
 		# Initiate a new Game.
 		newGame = new minGame players
 
-		# Save new game in memory
-		liveGames[gameId] = newGame
-
-		# Send responses to players
-		for player in players
-			playerState = newGame.getPlayerState player
-			socket.emit (player + '@' + gameId), playerState
+		# Save new game in Db
+		minDb.save gameId, newGame, (error, insertedGame) ->
+			if error
+				for player in players
+					socket.emit ('error@' + gameId), error: errors.saveFailedError
+				return false
+			else
+				# Send responses to players
+				for player in players
+					playerState = insertedGame.getPlayerState player
+					socket.emit (player + '@' + gameId), playerState
+				return true
 
 		return true
 
 	makePlayerMove = (socket, gameId, player, move) ->
 		# Fetch the gameState from gameId
-		game = liveGames[gameId]
+		minDb.findGameById gameId, (error, game) ->
+			if error
+				socket.emit ('error@' + gameId), error: errors.noSuchGameError
+				return false
 
-		# Do the validation
-		if not game.gameState
-			socket.emit 'error', error: errors.noSuchGame
-		if not game.gameState.deal[player] # Player MUST exist.
-			socket.emit 'error', error: errors.noSuchPlayer
-		if not move.sc || move.if
-			# Correct move attributes are not defined.
-			socket.emit 'error', error: errors.invalidMove
-
-		# All validations are OK! proceed!
-		{playerState, newState} = game.makeMove player, move.sc, move.if
-
-		# Send player states to all players
-		socket.broadcast.emit ('newState@' + gameId), newState
-
-		# Send the player's state
-		socket.emit (player + '@' + gameId), playerState
+			# Do the validation
+			if not game.gameState
+				socket.emit ('error@' + gameId), error: errors.noSuchGame
+			if not game.gameState.deal[player] # Player MUST exist.
+				socket.emit ('error@' + gameId), error: errors.noSuchPlayer
+			if not move.sc || move.if
+				# Correct move attributes are not defined.
+				socket.emit ('error@' + gameId), error: errors.invalidMove
+	
+			# All validations are OK! proceed!
+			{playerState, newState} = game.makeMove player, move.sc, move.if
+	
+			# Save the update to database
+			minDb.save gameId, game, (error, updatedGame) ->
+				if error
+					# Update failed
+					socket.broadcast.emit ('error@' + gameId), error: errors.saveFailedError
+					socket.emit ('error@' + gameId), error: errors.saveFailedError
+				else
+					# Send player states to all players
+					socket.broadcast.emit ('newState@' + gameId), newState
+			
+					# Send the player's state
+					socket.emit (player + '@' + gameId), playerState
 		true
 
 	declareMinimum = (socket, gameId, player) ->
 		# player thinks that he has achieved minimum
 		# Fetch the gameState from gameId
-		game = liveGames[gameId]
+		minDb.findGameById gameId, (error, game) ->
 
-		# Do the validation
-		if not game.gameState
-			socket.emit 'error', error: errors.noSuchGame
-		if not game.gameState.deal[player] # Player MUST exist.
-			socket.emit 'error', error: errors.noSuchPlayer
+			# Do the validation
+			if not game.gameState
+				socket.emit 'error', error: errors.noSuchGame
+			if not game.gameState.deal[player] # Player MUST exist.
+				socket.emit 'error', error: errors.noSuchPlayer
+	
+			# Aal izz well! proceed
+			try
+				gameResult = game.declareMinimum player
+			catch error
+				if error is errors.MinMovesRuleError
+					socket.emit 'error', error: errors.MinMovesRuleError
 
-		# Aal izz well! proceed
-		try
-			gameResult = game.declareMinimum player
-		catch error
-			if error is errors.MinMovesRuleError
-				socket.emit 'error', error: errors.MinMovesRuleError
-
-		# Send the result to every player
-		socket.broadcast.emit ('Result@' + gameId), gameResult
-		socket.emit ('Result@' + gameId), gameResult
+			# update the database
+			minDb.save gameId, game, (error, finishedGame) ->
+				if error
+					socket.emit 'error', error: errors.declareError
+				else
+					# Send the result to every player
+					socket.broadcast.emit ('Result@' + gameId), gameResult
+					socket.emit ('Result@' + gameId), gameResult
+		true
 
 	##########################################################
 
@@ -137,6 +166,7 @@ class minServer
 	constructor: (@port) ->
 		app = do express
 		port = @port
+
 		app.set 'title', 'Minimum Game'
 		# Configuration
 		app.configure ->
@@ -186,6 +216,10 @@ class minServer
 			# New move event
 			socket.on commands.makePlayerMove, (gameId, player, move) ->
 				makePlayerMove socket, gameId, player, move
+
+			# Declare game event
+			socket.on commands.declareGame, (gameId, player) ->
+				declareMinimum socket, gameId, player
 
 
 

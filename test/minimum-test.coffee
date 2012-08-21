@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 minGame = require '../minimum'
-should  = require 'should'
+should  = require('chai').should()
 _und    = require 'underscore'
 
 describe 'Minimum Game', ->
@@ -29,4 +29,11 @@ describe 'Minimum Game', ->
         myGame = new minGame ["Rahul", "Brajesh", "Vikash", "Ram", "Ankur", "Nikit"]
 
     it 'should create initial game state', ->
-        should.exist myGame.gameState
+        myGame.gameState.should.exist
+
+    it 'should have 6 players', ->
+        _und.keys(myGame.gameState.deal).should.have.length 6
+
+    it 'and each player should have 5 cards', ->
+        _und.each _und.keys(myGame.gameState.deal), (key) ->
+            myGame.gameState.deal[key].should.have.length 5

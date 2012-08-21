@@ -40,6 +40,7 @@ class minGame
     JOKERS_PER_DECK  = 4
     CARDS_PER_SUITE  = 13
     CARDS_PER_PLAYER = 5
+    JOKER_CARD       = 0 # identifier for joker card also equal to its points
     MIN_ROUNDS       = 3 # Minimum rounds after which player can declare
 
     ####################### PRIVATE INTERFACE #################################
@@ -121,7 +122,7 @@ class minGame
     areEqualCards = (cards) ->
         firstCard = -1                                      # Initialization
         for card in cards                                   # Check each card
-            if card <= totalSaneCards                       # Jokers are excluded
+            if card isnt JOKER_CARD                         # Jokers are excluded
                 if firstCard is -1                          # first run
                     firstCard = card % CARDS_PER_SUITE        # set first card
                 else if card % CARDS_PER_SUITE isnt firstCard # if cards mismatch then
@@ -140,7 +141,7 @@ class minGame
 
     #get the points for each card
     getPoints = (cardId) ->
-        if cardId <= totalSaneCards
+        if cardId isnt JOKER_CARD
             # Points of card are equal to its position in suite
             # king  = 13 points
             # queen = 12 points

@@ -164,8 +164,8 @@ class minServer
 			res.render "#{__dirname}/apps/test/test"
 			
 		# Start server
-		expressServer = app.listen app.settings.port
-		console.log "Server listening on port #{ app.settings.port }"
+		expressServer = app.listen app.settings.port, ->
+			console.log "Server listening on port #{ app.settings.port }"
 
 		# Attach webSocket server.
 		@webSocketServer = socketio.listen expressServer

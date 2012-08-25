@@ -29,11 +29,11 @@ appFiles =
     'development' :
         [
             { name: 'minimum', options: "--bare", outdir: "./"}
-            { name: 'min-server', options: "--bare", outdir: "./"}
+            { name: 'ws-controller', options: "--bare", outdir: "./"}
             { name: 'server', options: "--bare", outdir: "./" }
         ]    
 
 task 'compile', 'Compile individual files debug-friendly', ->
     for file, index in appFiles.development then do (file, index) ->
-        exec "coffee --output #{file.outdir} #{file.options} --compile src/#{file.name}.coffee", (err, stdout, stderr) ->
+        exec "coffee --output #{file.outdir} #{file.options} --compile #{file.name}.coffee", (err, stdout, stderr) ->
         	console.log stdout + stderr

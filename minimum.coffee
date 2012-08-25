@@ -74,14 +74,12 @@ class minGame
         return returnValue
 
     # Returns a random card from deck of cards
-    # Using Math.round() will give you a non-uniform distribution!
-    getRandomCard = (cards) ->
+    getRandomCard = (cards, totalSaneCards) ->
         totalCards = cards.length
-        cardNum = Math.floor(Math.random() * totalCards)
+        cardNum    = Math.floor(Math.random() * totalCards)
         randomCard = (cards.splice cardNum, 1)[0] # splice returns an array. hence [0]
-        totalSaneCards = totalCards - (totalCards % CARDS_PER_DECK) # get total cards without jokers
         if randomCard > totalSaneCards
-            randomCard = 0 # Joker card has 0 value
+            return JOKER_CARD # Joker card has 0 value
 
         # Card number 52 gives 0 with modulo. But we need 52
         randomCard = randomCard % CARDS_PER_DECK || CARDS_PER_DECK
@@ -90,25 +88,26 @@ class minGame
     # Initial deal of cards. distribute cards amoung players
     dealCards = (players, totalCards)->
         deal = {}                            # Initial deal is empty object
-        if not _und.isArray players          # players must be array of strings
-            throw 'InvalidPlayersError'
+        totalCardsLen  = totalCards.length
+        totalJokers    = totalCardsLen % CARDS_PER_DECK
+        totalSaneCards =  totalCardsLen - totalJokers
 
         for player in players                # Cycle through players
             if not _und.isString player      # Player name must be string
-                throw 'InvalidInputError'
+                throw new TypeError 'InvalidInputError'
 
             for card in [0...CARDS_PER_PLAYER] # Cycle through cards per player
                 if not deal[player]          # If this is the first card
                     deal[player] = []        # initiate empty array
     
                 # Get random card
-                randomCard = getRandomCard totalCards
+                randomCard = getRandomCard totalCards, totalSaneCards
 
                 # Push the card into deal
                 deal[player].push randomCard
     
         # Set the face card
-        faceCard = getRandomCard totalCards
+        faceCard = getRandomCard totalCards, totalSaneCards
         
         # Sort everyone's deal
         for playerName, playerDeal of deal
@@ -182,23 +181,15 @@ class minGame
 
     ####################### PUBLIC INTERFACE ##################################
     constructor: (players) ->
-        # Save the game information
-        @about =
-            version : '1.0b'
-            Name    : 'Minimum card game'
-            authors : ['Rahul Devaskar', 'Vikash Kumar']
-            website : ''
-        if not _und.isArray players
-            @gameState = null
-        try
-            # Get required number of cards
-            {packOfCards, noOfDecks} = getCards players.length
-            # Get initial deal
-            @gameState = dealCards players, packOfCards
-            # set number of decks in use
-            @gameState.noOfDecks = noOfDecks
-        catch error
-            @gameState = null
+        if not _und.isArray players  # players must be array of strings
+            throw new TypeError 'InvalidPlayersError'
+        
+        # Get required number of cards
+        {packOfCards, noOfDecks} = getCards players.length
+        # Get initial deal
+        @gameState = dealCards players, packOfCards
+        # set number of decks in use
+        @gameState.noOfDecks = noOfDecks
 
     # Get player's state
     # This is a subset of complete game state
@@ -216,8 +207,6 @@ class minGame
                 faceCards : gameState.faceCards # player will get faceCards
                 moves     : gameState.moves     # number of moves till this time
 
-        # Sanitize name
-        player = do player.trim
         # Add deal information
         for gamePlayer, gamePlayerDeal of gameState.deal
             # player will get his deal cards
@@ -255,7 +244,7 @@ class minGame
 
         if not areSame
             # User is trying to cheat! STOP!
-            throw 'SameCardsRuleError'
+            throw new Error 'SameCardsRuleError'
     
         # STEP 2 : take the new card
         if isFace
@@ -284,7 +273,7 @@ class minGame
         if gameState.restOfCards.length is 0
             topCard = do gameState.faceCards.shift
             # shuffle face cards and keep them as restOfCards
-            gameState.restOfCards = _und.shuffle faceCards
+            gameState.restOfCards = _und.shuffle gameState.faceCards
             # reset facecards to only one card.
             gameState.faceCards = [topCard]
 
@@ -298,7 +287,7 @@ class minGame
     declareMinimum: (player) ->
         gameState = @gameState
         if gameState.moves < gameState.minMoves      # check whether declaration is allowed
-            throw 'MinMovesRuleError'
+            throw new Error 'MinMovesRuleError'
 
         deals = gameState.deal                       # get current deals
         playerWon = true                             # assume that player has won!
@@ -332,5 +321,5 @@ class minGame
     ####################### END OF PUBLIC INTERFACE ###########################
 
 
-# Publish game to window
+# Finally Publish game
 module.exports = minGame

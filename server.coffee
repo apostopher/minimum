@@ -20,9 +20,52 @@
  SOFTWARE.
 ###
 
-minServer = require './min-server'
+express  = require 'express'
+socketio = require 'socket.io'
+crypto   = require 'crypto'
+stylus   = require 'stylus'
+wsHandler = require './ws-controller'
+
+app = do express
+port = 8125
+
+app.set 'title', 'Minimum Game'
+# Configuration
+app.configure ->
+	app.use stylus.middleware
+		src: __dirname + "/views"
+		dest: __dirname + "/public"
+
+	app.set 'views', __dirname + '/views'
+	app.set 'view engine', 'jade'
+	app.set 'port', port
+	app.use express.bodyParser()
+	app.use express.methodOverride()
+	app.use express.cookieParser()
+	app.use express.session
+		secret: "KioxIqpvdyfMXOHjVkUQmGLwEAtB0SZ9cTuNgaWFJYsbzerCDn"
+		#store: new RedisStore
+	
+	app.use require('connect-assets')()
+	app.use app.router
+	app.use express.static(__dirname + '/public')
+
+
+# Routes
+app.get '/', (req, res) ->
+	res.render "#{__dirname}/apps/test/test"
+			
+# Start server
+expressServer = app.listen app.settings.port, ->
+	console.log "Server listening on port #{ app.settings.port }"
+
+# Attach webSocket server.
+@webSocketServer = socketio.listen expressServer
+webSocketServer = @webSocketServer
+
+# Attach webSocket actions
+webSocketServer.sockets.on 'connection', wsHandler
+
 
 # set meaningful title for 'ps'
 process.title = 'MinServer'
-
-myServer = new minServer 8125

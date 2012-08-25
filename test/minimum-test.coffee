@@ -37,3 +37,77 @@ describe 'Minimum Game', ->
     it 'and each player should have 5 cards', ->
         _und.each _und.keys(myGame.gameState.deal), (key) ->
             myGame.gameState.deal[key].should.have.length 5
+
+    it 'should use only one deck', ->
+        myGame.gameState.noOfDecks.should.equal 1
+
+    it 'and each player should have unique cards except for jokers', ->
+        _und.each _und.keys(myGame.gameState.deal), (key) ->
+            cardsWithoutJokers = _und.compact myGame.gameState.deal[key]
+            cardsWithoutJokers.should.have.length (_und.uniq cardsWithoutJokers).length
+
+    it 'should have only one face card', ->
+        myGame.gameState.faceCards.should.have.length 1
+
+    it 'should have appropriate number of closed cards', ->
+        totalCardsinUse = 6*5 + 1
+        myGame.gameState.restOfCards.should.have.length (56 - totalCardsinUse)
+
+  describe 'when creating a new game with 9 players', ->
+    myGame = null
+    before ->
+        myGame = new minGame ["Rahul", "Brajesh", "Vikash", "Ram", "Ankur", "Nikit", "Parth", "Shailesh", "Tushar"]
+
+    it 'should use two decks', ->
+        myGame.gameState.noOfDecks.should.equal 2
+
+  describe 'when player makes a move by selecting face card', ->
+    myGame    = null
+    myCards   = null
+    faceCards = null
+    before ->
+        myGame = new minGame ["Rahul", "Brajesh", "Vikash", "Ram", "Ankur", "Nikit"]
+        myCards = _und.union myGame.gameState.deal["Rahul"], []
+        faceCards = _und.union myGame.gameState.faceCards, []
+        myGame.makeMove "Rahul", [myGame.gameState.deal["Rahul"][4]], true
+
+    it 'should have one card added to top of faceCards', ->
+        myGame.gameState.faceCards.should.have.length faceCards.length
+        myGame.gameState.faceCards[0].should.equal myCards[4]
+
+    it 'should have face card in his hand', ->
+        found = _und.find myGame.gameState.deal["Rahul"], (card) -> card is faceCards[0]
+        found.should.not.be.undefined
+
+  describe 'when player makes a move by selecting close card', ->
+    myGame    = null
+    myCards   = null
+    faceCards = null
+    before ->
+        myGame = new minGame ["Rahul", "Brajesh", "Vikash", "Ram", "Ankur", "Nikit"]
+        myCards = _und.union myGame.gameState.deal["Rahul"], []
+        faceCards = _und.union myGame.gameState.faceCards, []
+        myGame.makeMove "Rahul", [myGame.gameState.deal["Rahul"][4]], false
+
+    it 'should have one card added to top of faceCards', ->
+        myGame.gameState.faceCards.should.have.length (faceCards.length + 1)
+        myGame.gameState.faceCards[0].should.equal myCards[4]
+
+
+  describe 'when all closed cards are utilized', ->
+    myGame = null
+    before ->
+        myGame = new minGame ["Rahul", "Brajesh", "Vikash", "Ram", "Ankur", "Nikit"]
+        restOfCards = myGame.gameState.restOfCards.length
+        pending = true
+        while pending
+          for player in _und.keys myGame.gameState.deal
+              if myGame.gameState.moves is restOfCards
+                  pending = false
+                  break
+              myGame.makeMove player, [myGame.gameState.deal[player][4]], false
+
+
+    it 'should put topmost face card aside', ->
+        myGame.gameState.faceCards.should.have.length 1
+

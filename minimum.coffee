@@ -1,16 +1,16 @@
 ###
  Copyright (C) 2012 Rahul Devaskar <apostopher@gmail.com>
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
  the Software without restriction, including without limitation the rights to
  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
  of the Software, and to permit persons to whom the Software is furnished to do
  so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,6 +43,10 @@ class minGame
     JOKER_CARD       = 0 # identifier for joker card also equal to its points
     MIN_ROUNDS       = 3 # Minimum rounds after which player can declare
 
+    # Game states
+    RUNNING  = 1
+    FINISHED = 2
+
     ####################### PRIVATE INTERFACE #################################
 
     # Get appropriate number of cards
@@ -65,7 +69,11 @@ class minGame
 
             # Total number of cards.
             totalNoOfCards = totalSaneCards + noOfJokers
-            packOfCards = [1..totalNoOfCards]  
+            packOfCards = [1..totalNoOfCards]
+        else
+            totalNoOfCards = CARDS_PER_DECK + JOKERS_PER_DECK
+            packOfCards = [1..totalNoOfCards]
+            noOfDecks = 1
 
         returnValue =
             'packOfCards' : packOfCards
@@ -99,23 +107,23 @@ class minGame
             for card in [0...CARDS_PER_PLAYER] # Cycle through cards per player
                 if not deal[player]          # If this is the first card
                     deal[player] = []        # initiate empty array
-    
+
                 # Get random card
                 randomCard = getRandomCard totalCards, totalSaneCards
 
                 # Push the card into deal
                 deal[player].push randomCard
-    
+
         # Set the face card
         faceCard = getRandomCard totalCards, totalSaneCards
-        
+
         # Sort everyone's deal
         for playerName, playerDeal of deal
             sortDeal playerDeal
 
-        return 'restOfCards' : totalCards, 'deal' : deal, 'faceCards' : [faceCard], 
+        return 'restOfCards' : totalCards, 'deal' : deal, 'faceCards' : [faceCard],
         'moves' : 0, 'minMoves' : (MIN_ROUNDS * players.length)
-    
+
     # Check whether cards are of same type
     # Cards are same only if their modulus 13 is same.
     areEqualCards = (cards) ->
@@ -127,16 +135,16 @@ class minGame
                 else if card % CARDS_PER_SUITE isnt firstCard # if cards mismatch then
                     return false                            # return error to the caller
         return true                                         # all izz well!
-    
+
     # Remove the cards from player's deal
     removeFromDeal = (deal, cards) ->
-        for removeCard in cards               # Cycle through all cards 
+        for removeCard in cards               # Cycle through all cards
             for playerCard, cardIndex in deal # Check each card in deal
                 if removeCard is playerCard   # if cards match
                     deal.splice cardIndex, 1  # remove the card from deal
                     break                     # deal has unique cards so break
         return deal                           # return new deal
-    
+
 
     #get the points for each card
     getPoints = (cardId) ->
@@ -152,13 +160,13 @@ class minGame
         else
             # All jokers have 0 points
             return 0
-    
+
     # get points for current deal state
     getDealPoints = (deal) ->
         totalPoints = 0                   # Initialize total points to 0
         for card in deal                  # For every card in deal
             totalPoints += getPoints card # add card points to total points
-    
+
         return totalPoints                # return total points
 
     # this funtion sorts deal according to card value
@@ -167,7 +175,7 @@ class minGame
         compareFn = (left, right)->
             leftPts = (getPoints left)   # left card points
             rightPts = (getPoints right) # right card points
-            
+
             if leftPts < rightPts
                 return -1
             else if leftPts > rightPts
@@ -183,13 +191,15 @@ class minGame
     constructor: (players) ->
         if not _und.isArray players  # players must be array of strings
             throw new TypeError 'InvalidPlayersError'
-        
+
         # Get required number of cards
         {packOfCards, noOfDecks} = getCards players.length
         # Get initial deal
         @gameState = dealCards players, packOfCards
         # set number of decks in use
         @gameState.noOfDecks = noOfDecks
+        # set the game state to RUNNING
+        @gameState.currentState = RUNNING
 
     # Get player's state
     # This is a subset of complete game state
@@ -232,7 +242,7 @@ class minGame
         # player        : the player id for which this move is called.
         # selectedCards : Card numbers that player has selected to put.
         # faceOrDeck    : the source from which player has chosen to take card.
-        
+
         gameState = @gameState
         # STEP 1 : Check whether selectedCards are of same type (required)
         if selectedCards.length is 1
@@ -245,7 +255,7 @@ class minGame
         if not areSame
             # User is trying to cheat! STOP!
             throw new Error 'SameCardsRuleError'
-    
+
         # STEP 2 : take the new card
         if isFace
             # select topmost card from face cards
@@ -253,7 +263,7 @@ class minGame
         else
             # Randomly select new card from deck cards
             newCard = do gameState.restOfCards.shift
-    
+
         # STEP 3 : Add selectedCards to the faceCards
         for selectedCard in selectedCards
             # Make sure we insert interger and not string
@@ -262,7 +272,7 @@ class minGame
             # as selectedCard is foreign data we can't gurantee its validity.
             # Thus we use parseInt.
             gameState.faceCards.unshift parseInt selectedCard, 10
-    
+
         # STEP 4 : Update player's cards
         # Remove selectedCards from player's current deal
         gameState.deal[player] = removeFromDeal gameState.deal[player], selectedCards
@@ -305,7 +315,7 @@ class minGame
                     playerWon = false
                     gameState[winners].push person
                 gameState.result[person] = individualScore # calculate deal points
-    
+
         # Check whether player's has won
         if playerWon
             # Winner! set the score to 0
@@ -314,7 +324,10 @@ class minGame
         else
             # player lost set penalty score
             gameState.result[player] =  maxScore + claimedMinimum
-    
+
+        # set game state to FINISHED
+        gameState.currentState = FINISHED
+
         # return result
         return gameState
 

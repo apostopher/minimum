@@ -30,6 +30,7 @@ appFiles =
         [
             { name: 'minimum', options: "--bare", outdir: "./"}
             { name: 'ws-controller', options: "--bare", outdir: "./"}
+            { name: 'minimum.mongodb', options: "--bare", outdir: "./" }
             { name: 'server', options: "--bare", outdir: "./" }
         ]    
 

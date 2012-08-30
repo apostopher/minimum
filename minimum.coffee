@@ -76,22 +76,24 @@ class minGame
             noOfDecks = 1
 
         returnValue =
-            'packOfCards' : packOfCards
+            'packOfCards' : (_und.shuffle packOfCards)
             'noOfDecks'   : noOfDecks
 
         return returnValue
 
-    # Returns a random card from deck of cards
-    getRandomCard = (cards, totalSaneCards) ->
-        totalCards = cards.length
-        cardNum    = Math.floor(Math.random() * totalCards)
-        randomCard = (cards.splice cardNum, 1)[0] # splice returns an array. hence [0]
-        if randomCard > totalSaneCards
-            return JOKER_CARD # Joker card has 0 value
+    # Returns a card from deck of cards
+    getCard = (cards, totalSaneCards) ->
+        if cards.length
+            randomCard = cards.shift()
+            if randomCard > totalSaneCards
+                return JOKER_CARD # Joker card has 0 value
 
-        # Card number 52 gives 0 with modulo. But we need 52
-        randomCard = randomCard % CARDS_PER_DECK || CARDS_PER_DECK
-        return randomCard
+            # Card number 52 gives 0 with modulo. But we need 52
+            randomCard = randomCard % CARDS_PER_DECK || CARDS_PER_DECK
+            return randomCard
+        else
+            # nothing to select
+            return undefined
 
     # Initial deal of cards. distribute cards amoung players
     dealCards = (players, totalCards)->
@@ -109,20 +111,21 @@ class minGame
                     deal[player] = []        # initiate empty array
 
                 # Get random card
-                randomCard = getRandomCard totalCards, totalSaneCards
+                randomCard = getCard totalCards, totalSaneCards
 
                 # Push the card into deal
                 deal[player].push randomCard
 
         # Set the face card
-        faceCard = getRandomCard totalCards, totalSaneCards
+        faceCard = getCard totalCards, totalSaneCards
 
         # Sort everyone's deal
         for playerName, playerDeal of deal
             sortDeal playerDeal
 
         return 'restOfCards' : totalCards, 'deal' : deal, 'faceCards' : [faceCard],
-        'moves' : 0, 'minMoves' : (MIN_ROUNDS * players.length)
+        'moves' : 0, 'minMoves' : (MIN_ROUNDS * players.length), 'players' : players,
+        'nextMove' : 0
 
     # Check whether cards are of same type
     # Cards are same only if their modulus 13 is same.
@@ -188,53 +191,45 @@ class minGame
     ####################### END OF PRIVATE INTERFACE ##########################
 
     ####################### PUBLIC INTERFACE ##################################
-    constructor: (players) ->
-        if not _und.isArray players  # players must be array of strings
-            throw new TypeError 'InvalidPlayersError'
+    constructor: (players, me) ->
+        if me
+            # this is a copy constructor
+            @gameState = me.gameState
+        else
+            if not _und.isArray players  # players must be array of strings
+                throw new TypeError 'InvalidPlayersError'
 
-        # Get required number of cards
-        {packOfCards, noOfDecks} = getCards players.length
-        # Get initial deal
-        @gameState = dealCards players, packOfCards
-        # set number of decks in use
-        @gameState.noOfDecks = noOfDecks
-        # set the game state to RUNNING
-        @gameState.currentState = RUNNING
+            # Get required number of cards
+            {packOfCards, noOfDecks} = getCards players.length
+            # Get initial deal
+            @gameState = dealCards players, packOfCards
+            # set number of decks in use
+            @gameState.noOfDecks = noOfDecks
+            # set the game state to RUNNING
+            @gameState.currentState = RUNNING
 
     # Get player's state
     # This is a subset of complete game state
     # Player's state consists of this hand cards, and face card only
-    getPlayerState: (player, allStates = false) ->
+    getPlayerState: (player) ->
         gameState = @gameState
         # This state will be sent to player
         playerState =
             faceCards : gameState.faceCards # player will get faceCards
             moves     : gameState.moves     # number of moves till this time
-
-        if allStates
-            # This state will be sent to all other clients
-            newState =
-                faceCards : gameState.faceCards # player will get faceCards
-                moves     : gameState.moves     # number of moves till this time
+            nextMove  : gameState.players[gameState.nextMove]  # who will play next?
+            minMoves  : gameState.minMoves  # minimum moves to declare
 
         # Add deal information
+        playerState.deals = {}
+
         for gamePlayer, gamePlayerDeal of gameState.deal
-            # player will get his deal cards
             # player will ge count of other player's cards
+            playerState.deals[gamePlayer] = gamePlayerDeal.length
             if gamePlayer is player
-                playerState[gamePlayer] = gamePlayerDeal
-            else
-                playerState[gamePlayer] = gamePlayerDeal.length
+                playerState['myDeal'] = gamePlayerDeal
 
-            if allStates
-                # add length to newState
-                newState[gamePlayer] = gamePlayerDeal.length
-
-        if allStates
-            # Return player's state
-            return 'playerState' : playerState, 'newState' : newState
-        else
-            return playerState
+        return playerState
 
     # Make move function
     # player will have choice to select face card OR select card from Deck.
@@ -290,8 +285,13 @@ class minGame
         # STEP 6 : Update total number of moves made till now
         gameState.moves += 1
 
+        # STEP 7 : update who will play next
+        gameState.nextMove += 1
+        if gameState.nextMove is gameState.players.length
+            gameState.nextMove = 0
+
         # All done. Return player's state to caller
-        return @getPlayerState player, true
+        return @getPlayerState player
 
     # Player thinks he/she has minimum score
     declareMinimum: (player) ->

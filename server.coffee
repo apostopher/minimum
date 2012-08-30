@@ -51,11 +51,11 @@ app.configure ->
 
 # Routes
 app.get '/', (req, res) ->
-	res.render "#{__dirname}/apps/test/index"
+	res.render "#{__dirname}/apps/main/app",
+		gameid: ''
 
-app.get '/game/:id', (req, res) ->
-	res.render "#{__dirname}/apps/test/game",
-	  players:[{name:'Rahul', cards:5},{name: 'Niyati', cards:5}]
+app.get '/:id', (req, res) ->
+	res.render "#{__dirname}/apps/main/app", {gameid: req.params.id}
 
 # Start server
 expressServer = app.listen app.settings.port, ->

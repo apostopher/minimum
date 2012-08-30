@@ -1,0 +1,53 @@
+
+
+/* ===== Primary Styles ========================================================
+   Author: Rahul
+   ========================================================================== */
+
+#siteheader{
+	padding-left: 160px;
+	margin-top: 200px;
+}
+
+#imgHolder{
+	width:150px;
+	height:231px;
+	margin-top: 200px;
+	background-position: left center;
+	background-repeat: no-repeat;
+	float:left;
+}
+
+h1{
+	font: 400 24px/1.5 "Open Sans", sans-serif;
+	color:#111;
+}
+
+p{
+	font: 300 14px/1.5 "Open Sans", sans-serif;
+	color: #259DFF;
+	margin:0.5em 0;
+}
+
+footer{
+	background: url('../img/resources/hr.png') no-repeat top center;
+	padding:10px 0;
+	margin-top: 300px;
+	text-align: center;
+}
+
+footer p{
+	font: 400 12px/1.5 "Open Sans", sans-serif;
+	color: #666;
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -94,7 +94,7 @@ webSocketController = (io) ->
     socket.set 'name', hostName, ->
       socket.set 'game', gameId, ->
         # Notify the host about new game id
-        socket.emit 'newGame', gameId
+        socket.emit 'newGame', {gameId, hostName}
 
     # Player will share this gameId with his/her friends
     # friends would then join the game by entering gameId
@@ -124,11 +124,15 @@ webSocketController = (io) ->
           # associate host's name to socket
         socket.set 'name', playerName, ->
           socket.set 'game', gameId, ->
-            # Notify the player about successful join
-            io.sockets.in(gameId).emit ('joinedGame:' + gameId), playerName
+            # Send information about friends
+            getPlayersInRoom gameId, (playernames) ->
+              socket.emit ('friends:' + gameId), {friends: playernames, me: playerName}, (status) ->
+                # Notify the player about successful join
+                io.sockets.in(gameId).emit ('joinedGame:' + gameId), playerName
 
-            # Join room
-            socket.join gameId
+                # Join room
+                socket.join gameId
+
       else
         socket.emit ('error:' + gameId), error: errors.gameOn
 
@@ -177,7 +181,8 @@ webSocketController = (io) ->
     gameId = _und(gameId).trim()
 
     # Fetch the gameState from gameId
-    minDb.findGameById gameId, (error, game) ->
+    minDb.findGameById gameId, (error, gameStatic) ->
+      game = new minGame(null, gameStatic)
       if error
         socket.emit ('error:' + gameId), error: errors.noSuchGameError
         return false
@@ -187,12 +192,12 @@ webSocketController = (io) ->
         socket.emit ('error:' + gameId), error: errors.noSuchGame
       if not game.gameState.deal[player] # Player MUST exist.
         socket.emit ('error:' + gameId), error: errors.noSuchPlayer
-      if not move.sc || move.if
+      if not (move.sc || move.if)
         # Correct move attributes are not defined.
         socket.emit ('error:' + gameId), error: errors.invalidMove
 
       # All validations are OK! proceed!
-      {playerState, newState} = game.makeMove player, move.c, move.f
+      playerState = game.makeMove player, move.sc, move.if
 
       # Save the update to database
       minDb.saveGame gameId, game, (error, updatedGame) ->
@@ -201,11 +206,13 @@ webSocketController = (io) ->
           socket.broadcast.emit ('error:' + gameId), error: errors.saveFailedError
           socket.emit ('error:' + gameId), error: errors.saveFailedError
         else
-          # Send player states to all players
-          io.sockets.in(gameId).broadcast.emit ('newState:' + gameId), newState
-
           # Send the player's state
           socket.emit (player + ':' + gameId), playerState
+
+          delete playerState['myDeal']
+          # Send player states to all players
+          io.sockets.in(gameId).emit ('newState:' + gameId), playerState
+
     true
 
   declareMinimum = (socket, gameId, player) ->
@@ -251,6 +258,7 @@ webSocketController = (io) ->
 
     # Join game event
     socket.on commands.joinGame, (playerName, gameId) ->
+      console.log playerName
       joinGame socket, playerName, gameId
 
     # Start New game event

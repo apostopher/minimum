@@ -41,6 +41,19 @@ class minGameDbAdapter
       else
         callback null, games_collection
 
+  getGamesCount: (callback) ->
+    @db.collection 'games', (error, games_collection) ->
+      if error
+        callback error
+      else
+        games_collection.count (err, count) ->
+          if err
+            callback err
+          else
+            callback null, count
+          true
+      true
+
   findGameById: (id, callback) ->
     @getGames (error, games_collection) ->
       if error

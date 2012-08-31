@@ -224,8 +224,9 @@ webSocketController = (io) ->
 
     # player thinks that he has achieved minimum
     # Fetch the gameState from gameId
-    minDb.findGameById gameId, (error, game) ->
+    minDb.findGameById gameId, (error, gameStatic) ->
 
+      game = new minGame(null, gameStatic)
       # Do the validation
       if not game.gameState
         socket.emit 'error', error: errors.noSuchGame
@@ -238,6 +239,8 @@ webSocketController = (io) ->
       catch errObj
         if errObj.message is errors.MinMovesRuleError
           socket.emit 'error', error: errors.MinMovesRuleError
+        else
+          console.log errObj
 
       # update the database
       minDb.saveGame gameId, game, (error, finishedGame) ->

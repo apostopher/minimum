@@ -115,7 +115,7 @@ updateGameState = (state) ->
   $('#' + state.nextMove).addClass 'btn-primary'
 
   # check whether decl button should be visible
-  if state.moves > state.minMoves
+  if state.moves >= state.minMoves
     $('#declgamediv').show()
 
   true
@@ -205,6 +205,13 @@ $ ->
     gameid = $('body').data 'gameid'
     if gameid
       socket.emit 'newGame', gameid
+    false
+
+  $('#declGameFrm').submit (ev) ->
+    gameid = $('body').data 'gameid'
+    me = $('body').data 'me'
+    if gameid
+      socket.emit 'declareGame', gameid, me
     false
 
   attachTableCardSelect socket

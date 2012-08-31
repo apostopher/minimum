@@ -49,6 +49,13 @@ class minGame
 
     ####################### PRIVATE INTERFACE #################################
 
+    #get appropriate number of jokers
+    getJokers = (numOfJokers) ->
+      jokers = []
+      for num in [0...numOfJokers]
+        jokers.push JOKER_CARD
+      return jokers
+
     # Get appropriate number of cards
     getCards = (noOfPlayers) ->
         totalCardsinHand = noOfPlayers * CARDS_PER_PLAYER
@@ -68,24 +75,25 @@ class minGame
             totalSaneCards = noOfDecks * CARDS_PER_DECK
 
             # Total number of cards.
-            totalNoOfCards = totalSaneCards + noOfJokers
-            packOfCards = [1..totalNoOfCards]
+            packOfCards = [1..totalSaneCards]
+            Array.prototype.push.apply packOfCards, getJokers noOfJokers
         else
-            totalNoOfCards = CARDS_PER_DECK + JOKERS_PER_DECK
-            packOfCards = [1..totalNoOfCards]
+            packOfCards = [1..CARDS_PER_DECK]
+            Array.prototype.push.apply packOfCards, getJokers JOKERS_PER_DECK
             noOfDecks = 1
 
         returnValue =
             'packOfCards' : (_und.shuffle packOfCards)
             'noOfDecks'   : noOfDecks
-
         return returnValue
 
     # Returns a card from deck of cards
-    getCard = (cards, totalSaneCards) ->
+    # this function will map any card number to appropriate card in 52 cards.
+    # e.g. this would convert 112 to appropriate card within 52
+    getCard = (cards) ->
         if cards.length
-            randomCard = cards.shift()
-            if randomCard > totalSaneCards
+            randomCard = do cards.shift
+            if randomCard is JOKER_CARD
                 return JOKER_CARD # Joker card has 0 value
 
             # Card number 52 gives 0 with modulo. But we need 52
@@ -101,7 +109,6 @@ class minGame
         totalCardsLen  = totalCards.length
         totalJokers    = totalCardsLen % CARDS_PER_DECK
         totalSaneCards =  totalCardsLen - totalJokers
-
         for player in players                # Cycle through players
             if not _und.isString player      # Player name must be string
                 throw new TypeError 'InvalidInputError'
@@ -162,7 +169,7 @@ class minGame
             return cardId % CARDS_PER_SUITE || CARDS_PER_SUITE
         else
             # All jokers have 0 points
-            return 0
+            return JOKER_CARD
 
     # get points for current deal state
     getDealPoints = (deal) ->
@@ -254,10 +261,10 @@ class minGame
         # STEP 2 : take the new card
         if isFace
             # select topmost card from face cards
-            newCard = do gameState.faceCards.shift
+            newCard = getCard gameState.faceCards
         else
             # Randomly select new card from deck cards
-            newCard = do gameState.restOfCards.shift
+            newCard = getCard gameState.restOfCards
 
         # STEP 3 : Add selectedCards to the faceCards
         for selectedCard in selectedCards
@@ -313,17 +320,23 @@ class minGame
                 if individualScore <= claimedMinimum # set score for winners
                     individualScore = 0
                     playerWon = false
-                    gameState[winners].push person
+                    gameState['winners'].push person
                 gameState.result[person] = individualScore # calculate deal points
 
         # Check whether player's has won
         if playerWon
             # Winner! set the score to 0
             gameState.result[player] = 0
-            gameState[winners].push player
+            gameState['winners'].push player
         else
             # player lost set penalty score
             gameState.result[player] =  maxScore + claimedMinimum
+
+        # delete next move attribute
+        delete gameState['nextMove']
+
+        # add who declare info
+        gameState['whoDeclared'] = player
 
         # set game state to FINISHED
         gameState.currentState = FINISHED

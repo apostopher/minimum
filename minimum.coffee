@@ -75,11 +75,9 @@ class minGame
             totalSaneCards = noOfDecks * CARDS_PER_DECK
 
             # Total number of cards.
-            packOfCards = [1..totalSaneCards]
-            Array.prototype.push.apply packOfCards, getJokers noOfJokers
+            packOfCards = ([1..totalSaneCards]).concat getJokers noOfJokers
         else
-            packOfCards = [1..CARDS_PER_DECK]
-            Array.prototype.push.apply packOfCards, getJokers JOKERS_PER_DECK
+            packOfCards = ([1..CARDS_PER_DECK]).concat getJokers JOKERS_PER_DECK
             noOfDecks = 1
 
         returnValue =
@@ -246,6 +244,13 @@ class minGame
         # faceOrDeck    : the source from which player has chosen to take card.
 
         gameState = @gameState
+
+        # STEP 0 : Check whether player is allowed to make move
+        if player isnt gameState.players[gameState.nextMove]
+          # this player is not allowed to make move
+          err = new Error 'NotAllowedToMakeMoveError'
+          throw err
+
         # STEP 1 : Check whether selectedCards are of same type (required)
         if selectedCards.length is 1
             # if only one card it has to same :-)
@@ -303,6 +308,12 @@ class minGame
     # Player thinks he/she has minimum score
     declareMinimum: (player) ->
         gameState = @gameState
+
+        if player isnt gameState.players[gameState.nextMove]
+          # this player is not allowed to make move
+          err = new Error 'NotAllowedToMakeMoveError'
+          throw err
+
         if gameState.moves < gameState.minMoves      # check whether declaration is allowed
             throw new Error 'MinMovesRuleError'
 

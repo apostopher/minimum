@@ -197,7 +197,11 @@ webSocketController = (io) ->
         socket.emit ('error:' + gameId), error: errors.invalidMove
 
       # All validations are OK! proceed!
-      playerState = game.makeMove player, move.sc, move.if
+      try
+        playerState = game.makeMove player, move.sc, move.if
+      catch errObj
+        console.log errObj
+        return null
 
       # Save the update to database
       minDb.saveGame gameId, game, (error, updatedGame) ->

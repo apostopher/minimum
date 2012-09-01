@@ -1,15 +1,15 @@
 # Copyright (C) 2012 Rahul Devaskar <apostopher@gmail.com>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
 # the Software without restriction, including without limitation the rights to
 # use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 # of the Software, and to permit persons to whom the Software is furnished to do
 # so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,7 +24,7 @@ fs     = require 'fs'
 appFiles =
     'production' :
         [
-            
+
         ]
     'development' :
         [
@@ -32,9 +32,11 @@ appFiles =
             { name: 'ws-controller', options: "--bare", outdir: "./"}
             { name: 'minimum.mongodb', options: "--bare", outdir: "./" }
             { name: 'server', options: "--bare", outdir: "./" }
-        ]    
+            { name: 'app', options: "", outdir: "./", indir: "./public/js/"}
+        ]
 
 task 'compile', 'Compile individual files debug-friendly', ->
     for file, index in appFiles.development then do (file, index) ->
-        exec "coffee --output #{file.outdir} #{file.options} --compile #{file.name}.coffee", (err, stdout, stderr) ->
+        if not file.indir then file.indir = ""
+        exec "coffee --output #{file.outdir} #{file.options} --compile #{file.indir}#{file.name}.coffee", (err, stdout, stderr) ->
         	console.log stdout + stderr

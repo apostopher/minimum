@@ -64,6 +64,7 @@ expressServer = app.listen app.settings.port, ->
 # Attach webSocket server.
 @webSocketServer = socketio.listen expressServer
 webSocketServer = @webSocketServer
+webSocketServer.set 'log level', 1
 
 # Attach webSocket actions
 webSocketServer.sockets.on 'connection', webSocketController webSocketServer

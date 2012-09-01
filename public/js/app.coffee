@@ -19,6 +19,52 @@
 # SOFTWARE.
 
 WIDTH_CARD = 162
+ANGLE_CARD = 20
+CSS3_PREFIX = ['-ms-', '-moz-', '-webkit-', '-o-']
+
+showCards = (player, cards) ->
+  # create div to hold cards
+  cardlen = cards.length
+  # calculate the initial angle of first card
+  initAngle = ANGLE_CARD * cardlen / (-2)
+
+  showdiv = document.createElement 'div'
+  showdiv.setAttribute 'style', 'position: relative;'
+
+  # For each card in cards rotate the card and add z-index
+  for cardnum, index in cards
+    # create image element and add rotation css3
+    pimg = document.createElement 'img'
+    pimg.setAttribute 'src', "/img/#{cardnum}.png"
+    pimg.setAttribute 'class', 'rotateCard'
+    styleAttr = ''
+    for prefix in CSS3_PREFIX
+      styleAttr += prefix + 'transform: rotate(' + initAngle + 'deg); '
+
+    styleAttr += 'z-index:' + (index * 10) + ';'
+    pimg.setAttribute 'style', styleAttr
+
+    # Add image to div
+    showdiv.appendChild pimg
+    # increment angle
+    initAngle += ANGLE_CARD
+    #tilt the div
+    showdiv.setAttribute 'class', 'resultholder'
+  return showdiv
+
+showResults = (deals) ->
+  resultHolder = $ '#resultcardsrow'
+  # show the results to all players
+  for own player, deal of deals
+    spandiv = document.createElement 'div'
+    spandiv.setAttribute 'class', 'span2'
+    playerEle = showCards player, deal
+    spandiv.appendChild playerEle
+    resultHolder.append spandiv
+
+  $('#tablecardsrow').hide()
+  resultHolder.show()
+  true
 
 attachCardSelect = ->
   $('#mycards li').click (ev) ->
@@ -73,8 +119,34 @@ attachEvents = (socket, gameId, name) ->
   socket.on ('joinedGame:' + gameId), newFriendHandler
   true
 
+createMessage = (msg, type) ->
+  msgdiv = document.createElement 'div'
+  btnNode = document.createElement 'button'
+  btnNode.setAttribute 'type', 'button'
+  btnNode.setAttribute 'class', 'close'
+  btnNode.setAttribute 'data-dismiss', 'alert'
+  btnTxt = document.createTextNode '×'
+  btnNode.appendChild btnTxt
+
+  msgdiv.appendChild btnNode
+
+  txtNode = document.createTextNode msg
+  msgdiv.appendChild txtNode
+  $(msgdiv).addClass 'alert'
+  if type is 1
+    $(msgdiv).addClass 'alert-success'
+  else if type is 0
+    $(msgdiv).addClass 'alert-error'
+  else if type is 2
+    $(msgdiv).addClass 'alert-info'
+
+  return msgdiv
+
 errorHandler = (errObj) ->
-  console.log errObj
+  msgBoard = $('#msgboard')
+  msgBoard.empty()
+  declele = createMessage errObj.error, 0
+  msgBoard.append declele
   true
 
 newStateHandler = (newState) ->
@@ -107,7 +179,7 @@ updateGameState = (state) ->
   $('#opencards').html "<img src='/img/#{state.faceCards[0]}.png'/>"
 
   # update count of cards
-  for person, cards of state.deals
+  for own person, cards of state.deals
     $('#' + person + ' h3').html cards
 
   # update next move
@@ -131,8 +203,28 @@ privateHandler = (state) ->
   do attachCardSelect
   true
 
-resultHandler = (msg) ->
-  console.log msg
+resultHandler = (resultObj) ->
+  msgBoard = $('#msgboard')
+  msgBoard.empty()
+  me = $('body').data 'me'
+  myResult = parseInt resultObj.result[me], 10
+  whoDecl = resultObj.whoDeclared
+  if me is whoDecl
+    declele = createMessage "You declared minimum!", 2
+  else
+    declele = createMessage "#{whoDecl} declared minimum!", 2
+
+  msgBoard.append declele
+  # print the result
+  if myResult is 0
+    # I Won!
+    msgele = createMessage "Congrats! you won!", 1
+  else
+    msgele = createMessage "Sorry! you loose! your score is #{myResult}", 0
+
+  msgBoard.append msgele
+  # show result on screen
+  #showResults resultObj.deal
   true
 
 newFriendHandler = (playername) ->

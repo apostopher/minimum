@@ -135,12 +135,34 @@ li .well{
 	height:154px;
 }
 
-#startgamediv, declgamediv{
+#startgamediv, #declgamediv{
 	margin-top:10px;
+	margin-bottom:10px;
 }
 
-#startGameFrm, declGameFrm{
+
+#startGameFrm, #declGameFrm{
 	margin:0;
+}
+
+.rotateCard{
+	position: absolute; 
+	/*width: 100px;*/
+	-webkit-transform-origin: 0% 100%;
+	-moz-transform-origin: 0% 100%;
+	-ms-transform-origin: 0% 100%;
+	-o-transform-origin: 0% 100%;
+}
+
+.resultholder{
+	-webkit-transform-origin: 0% 100%;
+	-moz-transform-origin: 0% 100%;
+	-ms-transform-origin: 0% 100%;
+	-o-transform-origin: 0% 100%;
+	-webkit-transform: rotate(-10deg);
+	-moz-transform: rotate(-10deg);
+	-ms-transform: rotate(-10deg);
+	-o-transform: rotate(-10deg);
 }
 
 

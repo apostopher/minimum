@@ -245,13 +245,18 @@ class minGame
 
         gameState = @gameState
 
-        # STEP 0 : Check whether player is allowed to make move
+        # STEP 1 : Check the state of game
+        if gameState.currentState is FINISHED
+          # This game is over
+          throw new Error 'GameOverError'
+
+        # STEP 2 : Check whether player is allowed to make move
         if player isnt gameState.players[gameState.nextMove]
           # this player is not allowed to make move
           err = new Error 'NotAllowedToMakeMoveError'
           throw err
 
-        # STEP 1 : Check whether selectedCards are of same type (required)
+        # STEP 3 : Check whether selectedCards are of same type (required)
         if selectedCards.length is 1
             # if only one card it has to same :-)
             areSame = true
@@ -263,7 +268,7 @@ class minGame
             # User is trying to cheat! STOP!
             throw new Error 'SameCardsRuleError'
 
-        # STEP 2 : take the new card
+        # STEP 4 : take the new card
         if isFace
             # select topmost card from face cards
             newCard = getCard gameState.faceCards
@@ -271,7 +276,7 @@ class minGame
             # Randomly select new card from deck cards
             newCard = getCard gameState.restOfCards
 
-        # STEP 3 : Add selectedCards to the faceCards
+        # STEP 5 : Add selectedCards to the faceCards
         for selectedCard in selectedCards
             # Make sure we insert interger and not string
             # "31" is incorrect
@@ -280,13 +285,13 @@ class minGame
             # Thus we use parseInt.
             gameState.faceCards.unshift parseInt selectedCard, 10
 
-        # STEP 4 : Update player's cards
+        # STEP 6 : Update player's cards
         # Remove selectedCards from player's current deal
         gameState.deal[player] = removeFromDeal gameState.deal[player], selectedCards
         gameState.deal[player].push newCard # add new card to player's deal
         sortDeal gameState.deal[player]     # sort player's card
 
-        # STEP 5 : if closed deck on table is empty reshuffle and set
+        # STEP 7 : if closed deck on table is empty reshuffle and set
         if gameState.restOfCards.length is 0
             topCard = do gameState.faceCards.shift
             # shuffle face cards and keep them as restOfCards
@@ -294,10 +299,10 @@ class minGame
             # reset facecards to only one card.
             gameState.faceCards = [topCard]
 
-        # STEP 6 : Update total number of moves made till now
+        # STEP 8 : Update total number of moves made till now
         gameState.moves += 1
 
-        # STEP 7 : update who will play next
+        # STEP 9 : update who will play next
         gameState.nextMove += 1
         if gameState.nextMove is gameState.players.length
             gameState.nextMove = 0
@@ -308,6 +313,11 @@ class minGame
     # Player thinks he/she has minimum score
     declareMinimum: (player) ->
         gameState = @gameState
+
+        # check the state of game
+        if gameState.currentState is FINISHED
+          # This game is over
+          throw new Error 'GameOverError'
 
         if player isnt gameState.players[gameState.nextMove]
           # this player is not allowed to make move

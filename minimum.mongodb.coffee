@@ -30,7 +30,7 @@ ObjectID   = mongo.ObjectID
 class minGameDbAdapter
 
 	constructor: (host = 'localhost', port = 27017) ->
-    @db = new Db 'minGameDB', new Server host, port, {auto_reconnect: true}, {}
+    @db = new Db 'minGameDB', (new Server host, port, {auto_reconnect: true}), {w : 1}
   		@db.open ->
         true
 

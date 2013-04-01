@@ -32,7 +32,7 @@ appFiles =
             { name: 'ws-controller', options: "--bare", outdir: "./"}
             { name: 'minimum.mongodb', options: "--bare", outdir: "./" }
             { name: 'server', options: "--bare", outdir: "./" }
-            { name: 'app', options: "", outdir: "./", indir: "./public/js/"}
+            { name: 'app', options: "", outdir: "./public/js/", indir: "./public/js/"}
         ]
 
 task 'compile', 'Compile individual files debug-friendly', ->

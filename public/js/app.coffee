@@ -234,7 +234,7 @@ newFriendHandler = (playername) ->
 # on load event
 $ ->
   # Connect to websocket server
-  socket = io.connect 'http://localhost:8125'
+  socket = io.connect window.location
 
   # Attach form submit events
   # This function will be called when new game is hosted

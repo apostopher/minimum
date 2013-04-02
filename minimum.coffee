@@ -101,7 +101,7 @@ class minGame
             # nothing to select
             return undefined
 
-    # Initial deal of cards. distribute cards amoung players
+    # Initial deal of cards. distribute cards among players
     dealCards = (players, totalCards)->
         deal = {}                            # Initial deal is empty object
         totalCardsLen  = totalCards.length
@@ -116,7 +116,7 @@ class minGame
                     deal[player] = []        # initiate empty array
 
                 # Get random card
-                randomCard = getCard totalCards, totalSaneCards
+                randomCard = getCard totalCards
 
                 # Push the card into deal
                 deal[player].push randomCard

@@ -1,0 +1,24 @@
+<div class="container">
+  <div class="jumbotron">
+    <h1 ng-style="getFunColor()">Minimum Game</h1>
+    <h2 class="game-desc">an addictive multiplayer card game</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-4 col-md-offset-1">
+      <div class="window">
+        <h3>Host a new game</h3>
+        <form role="form" class="form-inline" ng-submit="hostGame(host)">
+          <div class="form-group">
+            <input type="text" class="form-control host-name" ng-model="host.name" placeholder="Enter your name">
+          </div>
+          <button type="submit" class="btn btn-default host-btn">Start</a>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-4 col-md-offset-2">
+      <div class="window">
+        
+      </div>
+    </div>
+  </div>
+</div>

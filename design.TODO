@@ -1,0 +1,25 @@
+Host Game:
+ ☐ create room
+ ☐ create game_id
+ ☐ notify self [game_id]
+
+Join Game:
+ ☐ add player to room
+ ☐ notify self [friends in room]
+ ☐ notify others [about new player]
+
+Start Game:
+ ☐ create and save game instance
+ ☐ notify all [initial cards]
+
+Make Move:
+ ☐ retrive game
+ ☐ validate move
+ ☐ make move
+ ☐ notify all [cards state]
+
+Declare Game:
+ ☐ get game
+ ☐ move validation
+ ☐ declare game
+ ☐ notify all [result]

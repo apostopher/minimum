@@ -1,51 +1,23 @@
 {
-  "name": "minimum-game",
-  "preferGlobal": "true",
-  "version": "0.1.0",
-  "author": "Rahul Devaskar <apostopher@gmail.com>",
-  "description": "a simple addictive card game",
-  "contributors": [
-    {
-      "name": "Rahul Devaskar",
-      "email": "apostopher@gmail.com"
-    }
-  ],
-  "bin": {
-    "minimum-server": "./bin/min-server"
+  "name": "newstyle",
+  "version": "0.0.0",
+  "dependencies": {
+    "body-parser": "^1.4.3",
+    "compression": "^1.0.9",
+    "express": "^4.6.1",
+    "jade": "^1.4.2",
+    "lodash": "^2.4.1",
+    "mongodb": "^1.4.7",
+    "socket.io": "^1.0.6",
+    "socket.io-redis": "^0.1.3"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1"
+  },
+  "engines": {
+    "node": ">=0.10.0"
   },
   "scripts": {
-    "start": "coffee server.coffee",
-    "test": ""
-  },
-  "main": "./lib/min-lib",
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
-  "keywords": [
-    "cards",
-    "game"
-  ],
-  "dependencies": {
-    "mongodb": ">= 1.1.2",
-    "socket.io": ">=0.9.x",
-    "express": "3.x",
-    "underscore": ">=1.3.3",
-    "stylus": "~0.29.0",
-    "connect-assets": "~2.3.3",
-    "jade": "~0.27.2",
-    "coffee-script": "~1.3.3",
-    "underscore.string": "~2.2.0rc"
-  },
-  "noAnalyze": false,
-  "devDependencies": {
-    "mocha": "~1.3.2",
-    "request": "2.1.x",
-    "chai": "~1.2.0"
-  },
-  "bundleDependencies": [],
-  "license": "MIT",
-  "engine": {
-    "node": ">=0.8"
+    "test": "mocha -R spec"
   }
 }

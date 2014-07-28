@@ -1,0 +1,63 @@
+.jumbotron {
+  background: transparent;
+  text-align: center;
+}
+
+.jumbotron h1 {
+  font-weight: 100;
+  margin:0;
+  margin-top: 100px;
+  font-size: 50px;
+}
+.jumbotron .btn {
+  font-size: 21px;
+  padding: 14px 24px;
+}
+.host-btn {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.host-btn:hover {
+  background: #F19D45;
+  border-color: #F19D45;
+  color: white;
+}
+
+.game-desc {
+  text-align: center;
+  font-size: 16px;
+  font-weight: lighter;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: black;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.window {
+  border: 1px solid #C3C3C3;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0px 2px 3px 0px rgba(50, 50, 50, 0.11);
+  text-align: left;
+  vertical-align: top;
+  margin: 0;
+  padding: 10px;
+}
+
+.window h3 {
+  font-weight: 200;
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+.host-name {
+  transition: all 300ms;
+  border: 1px solid #ddd;
+  padding: 4px;
+  border-radius: 3px;
+  line-height: 120%;
+  outline: 0;
+  margin: auto;
+}

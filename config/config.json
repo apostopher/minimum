@@ -1,0 +1,28 @@
+{
+  "port": 8125,
+  "id": "minimum",
+  "resources": [],
+  "commands" : [
+    "startGame",
+    "joinGame",
+    "performMove",
+    "hostGame",
+    "declareGame"
+  ],
+  "errors" : {
+    "newGame"           : "Error occured while starting game.",
+    "noStringPlayer"    : "Player name must be string",
+    "playersError"      : "invalid names of players.",
+    "noSuchGame"        : "No such game is in progress.",
+    "gameOn"            : "The game has already started.",
+    "gameOverError"     : "This game is over",
+    "noSuchPlayer"      : "No such player exists.",
+    "invalidMove"       : "Invalid move.",
+    "minMovesRuleError" : "Not allowed to declare before minimum moves.",
+    "saveFailedError"   : "Saving player\"s move failed!",
+    "noSuchGameError"   : "No such game exists.",
+    "declareError"      : "Error occured in declaring game.",
+    "notAllowedToMakeMoveError" : "You can\"t make move now. Please wait for your turn",
+    "sameCardsError"    : "Cards you selected are not same"
+  }
+}
